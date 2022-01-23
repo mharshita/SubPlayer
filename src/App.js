@@ -16,8 +16,42 @@ const Style = styled.div`
     height: 100%;
     width: 100%;
 
+    form {
+        margin-top: 1em;
+        padding: 0.5em;
+        margin-left: 12%;
+    }
+
+    .form-input {
+        padding: 0.8em;
+        outline: none;
+        border: none;
+        width: 30em;
+    }
+
+    .form-btn {
+        background-color: #ff7f50;
+        outline: none;
+        border: none;
+        padding: 0.8em;
+        color: white;
+        cursor: pointer;
+    }
+
+    .first-col-wrapper {
+        width: 50%;
+    }
+
+    .second-col-wrapper {
+        width: 50%;
+        display: flex;
+        position: absolute;
+        right: 0;
+    }
+
     .main {
         display: flex;
+        flex-direction: row;
         height: calc(100% - 200px);
 
         .player {
@@ -26,10 +60,14 @@ const Style = styled.div`
 
         .subtitles {
             width: 250px;
+            position: absolute;
+            right: 300px;
         }
 
         .tool {
             width: 300px;
+            position: absolute;
+            right: 0;
         }
     }
 
@@ -50,9 +88,35 @@ export default function App({ defaultLang }) {
     const [playing, setPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(-1);
+    const [formData, setFormData] = useState({ ytUrl: 'https://www.youtube.com/watch?v=pb7_YJp9bVA' });
 
     const newSub = useCallback((item) => new Sub(item), []);
     const hasSub = useCallback((sub) => subtitle.indexOf(sub), [subtitle]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log('Form here', formData);
+    };
+
+    const API = process.env.REACT_APP_KEY;
+    const URL = formData.ytUrl;
+
+    function youtube_parser(url) {
+        var video_id = url.split('v=')[1] || url.split('.be/')[1] || url.split('embed/')[1];
+        if (video_id.includes('&')) {
+            var ampersandPosition = video_id.indexOf('&');
+        } else if (video_id.includes('?')) {
+            ampersandPosition = video_id.indexOf('?');
+        }
+        if (ampersandPosition !== -1) {
+            video_id = video_id.substring(0, ampersandPosition);
+        }
+        return video_id;
+    }
+
+    const ID = youtube_parser(URL);
+
+    var finalURL = `https://www.googleapis.com/youtube/v3/videos?key=${API}&part=snippet&id=${ID}`;
 
     const formatSub = useCallback(
         (sub) => {
@@ -303,14 +367,37 @@ export default function App({ defaultLang }) {
         formatSub,
         mergeSub,
         splitSub,
+        finalURL,
     };
 
     return (
         <Style>
             <div className="main">
-                <Player {...props} />
-                <Subtitles {...props} />
-                <Tool {...props} />
+                <div className="first-col-wrapper">
+                    <div className="form-wrapper">
+                        <form onSubmit={handleSubmit}>
+                            <span>
+                                <input
+                                    className="form-input"
+                                    onChange={(e) => setFormData({ ...formData, ytUrl: e.target.value })}
+                                    value={formData.ytUrl}
+                                    type="text"
+                                    name="ytUrl"
+                                    id="ytUrl"
+                                    placeholder="Youtube URL"
+                                />
+                            </span>
+                            <span>
+                                <input className="form-btn" type="submit" value="Import Video" />
+                            </span>
+                        </form>
+                    </div>
+                    <Player {...props} />
+                </div>
+                <div className="second-col-wrapper">
+                    <Subtitles {...props} />
+                    <Tool {...props} />
+                </div>
             </div>
             <Footer {...props} />
             {loading ? <Loading loading={loading} /> : null}

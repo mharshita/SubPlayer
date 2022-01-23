@@ -4,6 +4,11 @@ import { Translate } from 'react-i18nify';
 import styled from 'styled-components';
 import backlight from '../libs/backlight';
 import { isPlaying } from '../utils';
+// const YouTubeToHtml5 = require('@thelevicole/youtube-to-html5-loader');
+// new YouTubeToHtml5({
+//     attribute: 'data-yt',
+//     withAudio: true,
+// });
 
 const Style = styled.div`
     display: flex;
@@ -83,43 +88,68 @@ const Style = styled.div`
     }
 `;
 
-const VideoWrap = memo(
-    ({ setPlayer, setCurrentTime, setPlaying }) => {
-        const $video = createRef();
-
-        useEffect(() => {
-            setPlayer($video.current);
-            (function loop() {
-                window.requestAnimationFrame(() => {
-                    if ($video.current) {
-                        setPlaying(isPlaying($video.current));
-                        setCurrentTime($video.current.currentTime || 0);
-                    }
-                    loop();
-                });
-            })();
-        }, [setPlayer, setCurrentTime, setPlaying, $video]);
-
-        const onClick = useCallback(() => {
-            if ($video.current) {
-                if (isPlaying($video.current)) {
-                    $video.current.pause();
-                } else {
-                    $video.current.play();
-                }
-            }
-        }, [$video]);
-
-        return <video onClick={onClick} src="/sample.mp4?t=1" ref={$video} />;
-    },
-    () => true,
-);
-
 export default function Player(props) {
     const [currentSub, setCurrentSub] = useState(null);
     const [focusing, setFocusing] = useState(false);
     const [inputItemCursor, setInputItemCursor] = useState(0);
     const $player = createRef();
+
+    const VideoWrap = memo(
+        ({ setPlayer, setCurrentTime, setPlaying }) => {
+            const $video = createRef();
+
+            useEffect(() => {
+                setPlayer($video.current);
+                (function loop() {
+                    window.requestAnimationFrame(() => {
+                        if ($video.current) {
+                            setPlaying(isPlaying($video.current));
+                            setCurrentTime($video.current.currentTime || 0);
+                        }
+                        loop();
+                    });
+                })();
+            }, [setPlayer, setCurrentTime, setPlaying, $video]);
+
+            const onClick = useCallback(() => {
+                if ($video.current) {
+                    if (isPlaying($video.current)) {
+                        $video.current.pause();
+                    } else {
+                        $video.current.play();
+                    }
+                }
+            }, [$video]);
+
+            var [resultYt, setResultYt] = useState('');
+
+            fetch(props.finalURL)
+                .then((response) => response.json())
+                .then((json) => {
+                    resultYt = 'https://www.youtube.com/embed/' + json.items[0].id;
+                    setResultYt(resultYt);
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+
+            return (
+                <iframe
+                    onClick={onClick}
+                    width="560"
+                    height="315"
+                    src={resultYt}
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                ></iframe>
+            );
+            // return <video onClick={onClick} src="/sample.mp4?t=1" ref={$video} />;
+            // return <video onClick={onClick} data-yt={resultYt} ref={$video} />;
+        },
+        () => true,
+    );
 
     useEffect(() => {
         if ($player.current && props.player && !backlight.state) {
