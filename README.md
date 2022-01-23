@@ -19,4 +19,4 @@ You can preview and run the video.
 This application supports translation only in Indian Languages and English.
 
 ![Screenshot](./images/Subplayer_screenshot.png)
-
+![Screenshot](./images/subplayer_ss.png)
