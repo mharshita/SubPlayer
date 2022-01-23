@@ -4,7 +4,7 @@
 
 Subplayer is online subtitle editor that helps in editing the subtitles. The videos can be imported both manually or by using youtube video link.
 
-Steps to run the app locally on your system:
+## Steps to run the app locally on your system:
 1. Fork the repository.
 2. Clone the repository by running `git clone https://github.com/{YOUR_USERNAME}/SubPlayer.git`
 3. Go inside the directory and run `npm i`
